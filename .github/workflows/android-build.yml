@@ -36,7 +36,11 @@ jobs:
       - name: Decode Android Keystore
         run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/my-release-key.jks
 
-      # 6️⃣ Build the signed release APK
+      # 6️⃣ Make gradlew executable (fix permission error)
+      - name: Make gradlew executable
+        run: chmod +x android/gradlew
+
+      # 7️⃣ Build the signed release APK
       - name: Build Release APK
         run: |
           cd android
@@ -46,7 +50,7 @@ jobs:
             -Pandroid.injected.signing.key.alias=${{ secrets.ANDROID_KEY_ALIAS }} \
             -Pandroid.injected.signing.key.password=${{ secrets.ANDROID_KEY_PASSWORD }}
 
-      # 7️⃣ Upload APK as artifact
+      # 8️⃣ Upload APK as artifact
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
