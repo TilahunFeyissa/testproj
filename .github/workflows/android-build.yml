@@ -11,29 +11,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout the code
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # 2️⃣ Set up Node.js (v20)
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      # 3️⃣ Set up JDK (required for Android)
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      - name: Install Yarn
-        run: npm install -g yarn
-
+      # 4️⃣ Install npm dependencies
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: npm ci
 
+      # 5️⃣ Decode Android Keystore from GitHub Secrets
       - name: Decode Android Keystore
         run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/my-release-key.jks
 
+      # 6️⃣ Build the signed release APK
       - name: Build Release APK
         run: |
           cd android
@@ -43,6 +46,7 @@ jobs:
             -Pandroid.injected.signing.key.alias=${{ secrets.ANDROID_KEY_ALIAS }} \
             -Pandroid.injected.signing.key.password=${{ secrets.ANDROID_KEY_PASSWORD }}
 
+      # 7️⃣ Upload APK as artifact
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
