@@ -55,7 +55,7 @@ jobs:
           client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
           client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
           domain: 'https://app.infisical.com' # use https://eu.infisical.com if EU region
-          env-slug: 'development'
+          env-slug: development
           project-slug: 'test-project-fzug'
           export-type: 'file'
           file-output-path: '.env'
