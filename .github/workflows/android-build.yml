@@ -9,11 +9,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    env: # 👈 must be indented 4 spaces under "build"
-      ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-      ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-      ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+    env:
+      INFISCAL_TOKEN: ${{ secrets.INFISCAL_TOKEN }}
 
     steps:
       # 1. Checkout
@@ -35,7 +32,7 @@ jobs:
           restore-keys: |
             node-modules-
 
-      # 4. Install deps
+      # 4. Install dependencies
       - name: Install dependencies
         run: npm ci
 
@@ -57,8 +54,37 @@ jobs:
           restore-keys: |
             gradle-
 
-      # 7. Decode keystore (auto-detect PKCS12 vs JKS)
-      - name: Decode and prepare keystore (detect + convert PKCS12 → JKS)
+      # 7. Install Infisical CLI
+      - name: Install Infisical CLI
+        run: npm install -g @infisical/cli
+
+      # 8. Fetch Android signing secrets from Infisical
+      - name: Fetch Android secrets
+        shell: bash
+        run: |
+          set -e
+          # Login with service token
+          infisical login --service-token "$INFISCAL_TOKEN"
+
+          # Export Android secrets to env vars
+          export ANDROID_KEYSTORE_BASE64=$(infisical get ANDROID_KEYSTORE_BASE64)
+          export ANDROID_KEYSTORE_PASSWORD=$(infisical get ANDROID_KEYSTORE_PASSWORD)
+          export ANDROID_KEY_PASSWORD=$(infisical get ANDROID_KEY_PASSWORD)
+          export ANDROID_KEY_ALIAS=$(infisical get ANDROID_KEY_ALIAS)
+
+          # Optional: quick sanity check
+          echo "Keystore base64 length: ${#ANDROID_KEYSTORE_BASE64}"
+          echo "Alias: $ANDROID_KEY_ALIAS"
+
+          # Export for subsequent steps
+          echo "ANDROID_KEYSTORE_BASE64=$ANDROID_KEYSTORE_BASE64" >> $GITHUB_ENV
+          echo "ANDROID_KEYSTORE_PASSWORD=$ANDROID_KEYSTORE_PASSWORD" >> $GITHUB_ENV
+          echo "ANDROID_KEY_PASSWORD=$ANDROID_KEY_PASSWORD" >> $GITHUB_ENV
+          echo "ANDROID_KEY_ALIAS=$ANDROID_KEY_ALIAS" >> $GITHUB_ENV
+
+      # 9. Decode keystore and prepare JKS
+      - name: Decode and prepare keystore
+        shell: bash
         run: |
           set -e
           mkdir -p android
@@ -72,7 +98,7 @@ jobs:
               -deststorepass "$ANDROID_KEYSTORE_PASSWORD" -destkeypass "$ANDROID_KEY_PASSWORD" \
               -srcalias "$ANDROID_KEY_ALIAS" -destalias "$ANDROID_KEY_ALIAS" -noprompt
           else
-            echo "Not PKCS12 (or PKCS12 listing failed) — assuming input is JKS bytes. Writing as JKS."
+            echo "Not PKCS12 — assuming JKS bytes."
             mv android/key.bin android/my-release-key.jks
           fi
 
@@ -80,8 +106,9 @@ jobs:
           echo "Keystore alias/entries:"
           keytool -list -v -keystore android/my-release-key.jks -storepass "$ANDROID_KEYSTORE_PASSWORD" || true
 
-      # 8. Build AAB
-      - name: Build AAB (use injected properties)
+      # 10. Build AAB
+      - name: Build AAB
+        shell: bash
         run: |
           cd android
           chmod +x gradlew
@@ -92,7 +119,7 @@ jobs:
             -Pandroid.injected.signing.key.password="$ANDROID_KEY_PASSWORD" \
             --stacktrace --info
 
-      # 9. Upload artifact
+      # 11. Upload artifact
       - name: Upload AAB Artifact
         uses: actions/upload-artifact@v4
         with:
