@@ -64,9 +64,15 @@ jobs:
       # 7. Load env vars from .env
       - name: Load .env
         run: |
-          set -a
-          source .env
-          set +a
+          if [ -f ".env" ]; then
+            echo "Loading .env"
+            set -a
+            source .env
+            set +a
+          else
+            echo ".env file not found. Check the Infisical step."
+            exit 1
+          fi
 
       # 8. Decode and prepare keystore
       - name: Decode and prepare keystore
