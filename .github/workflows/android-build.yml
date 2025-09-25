@@ -59,6 +59,7 @@ jobs:
           project-slug: 'test-project-fzug'
           export-type: file
           file-output-path: .env
+          recursive: true
           include-imports: true
 
       # 7. Load env vars from .env
