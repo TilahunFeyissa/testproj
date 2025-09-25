@@ -67,15 +67,15 @@ jobs:
 
       # 8. Fetch secrets from Infisical
       - name: Fetch secrets from Infisical
-        env:
-          INFISICAL_TOKEN: ${{secrets.INFISICAL_TOKEN}}
         run: |
           infisical export \
+            -t "$INFISICAL_TOKEN" \
             --projectId "$INFISICAL_PROJECT_ID" \
             --env "$INFISICAL_ENVIRONMENT" \
             --format dotenv \
             --output-file .env
 
+          echo "Dumping .env for debug:"
           cat .env
 
       # 9. Decode keystore from Infisical secret
