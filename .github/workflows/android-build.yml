@@ -16,17 +16,20 @@ jobs:
       ANDROID_KEYSTORE_PASSWORD: my-keystore-password
       # Put your base64 of the keystore here (one-line). Use >- fold to avoid newlines in YAML.
       ANDROID_KEYSTORE_BASE64: >-
-        REPLACE_WITH_YOUR_BASE64_ENCODED_KEYSTORE_SINGLE_LINE
+        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
 
     steps:
+      # 1. Checkout
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2. Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
+      # 3. Cache node_modules
       - name: Cache Node modules
         uses: actions/cache@v3
         with:
@@ -35,15 +38,18 @@ jobs:
           restore-keys: |
             node-modules-
 
+      # 4. Install deps
       - name: Install dependencies
         run: npm ci
 
+      # 5. Java
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
+      # 6. Cache Gradle
       - name: Cache Gradle
         uses: actions/cache@v3
         with:
@@ -54,7 +60,7 @@ jobs:
           restore-keys: |
             gradle-
 
-      # Decode the base64 into a file, detect PKCS12, convert to JKS if necessary
+      # 7. Decode keystore (auto-detect PKCS12 vs JKS)
       - name: Decode and prepare keystore (detect + convert PKCS12 → JKS)
         run: |
           set -e
@@ -67,7 +73,8 @@ jobs:
             echo "Detected PKCS12 keystore — converting to JKS..."
             keytool -importkeystore \
               -srckeystore android/key.bin -srcstoretype PKCS12 -srcstorepass "$ANDROID_KEYSTORE_PASSWORD" \
-              -destkeystore android/my-release-key.jks -deststoretype JKS -deststorepass "$ANDROID_KEYSTORE_PASSWORD" -destkeypass "$ANDROID_KEY_PASSWORD" \
+              -destkeystore android/my-release-key.jks -deststoretype JKS \
+              -deststorepass "$ANDROID_KEYSTORE_PASSWORD" -destkeypass "$ANDROID_KEY_PASSWORD" \
               -srcalias "$ANDROID_KEY_ALIAS" -destalias "$ANDROID_KEY_ALIAS" -noprompt
           else
             echo "Not PKCS12 (or PKCS12 listing failed) — assuming input is JKS bytes. Writing as JKS."
@@ -79,6 +86,7 @@ jobs:
           echo "Keystore alias/entries:"
           keytool -list -v -keystore android/my-release-key.jks -storepass "$ANDROID_KEYSTORE_PASSWORD" || true
 
+      # 8. Build AAB
       - name: Build AAB (use injected properties)
         run: |
           cd android
@@ -90,6 +98,7 @@ jobs:
             -Pandroid.injected.signing.key.password="$ANDROID_KEY_PASSWORD" \
             --stacktrace --info
 
+      # 9. Upload artifact
       - name: Upload AAB Artifact
         uses: actions/upload-artifact@v4
         with:
