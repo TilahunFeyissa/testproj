@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      INFISCAL_TOKEN: ${{ secrets.INFISCAL_TOKEN }}
+      INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN }}
 
     steps:
-      # 1. Checkout
+      # 1. Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: 20
 
-      # 3. Cache node_modules
+      # 3. Cache Node modules
       - name: Cache Node modules
         uses: actions/cache@v3
         with:
@@ -56,32 +56,25 @@ jobs:
 
       # 7. Install Infisical CLI
       - name: Install Infisical CLI
-        run: npm install -g @infisical/cli
-
-      # 8. Fetch Android secrets from Infisical
-      - name: Fetch Android secrets
-        shell: bash
-        env:
-          INFISCAL_TOKEN: ${{ secrets.INFISCAL_TOKEN }}
         run: |
-          set -e
-          # Pull secrets directly
-          ANDROID_KEYSTORE_BASE64=$(infisical pull --token "$INFISCAL_TOKEN" --secret ANDROID_KEYSTORE_BASE64 --plain)
-          ANDROID_KEYSTORE_PASSWORD=$(infisical pull --token "$INFISCAL_TOKEN" --secret ANDROID_KEYSTORE_PASSWORD --plain)
-          ANDROID_KEY_PASSWORD=$(infisical pull --token "$INFISCAL_TOKEN" --secret ANDROID_KEY_PASSWORD --plain)
-          ANDROID_KEY_ALIAS=$(infisical pull --token "$INFISCAL_TOKEN" --secret ANDROID_KEY_ALIAS --plain)
+          curl -sSL https://infisical.com/docs/cli/install | bash
+          sudo mv infisical /usr/local/bin/
 
-          # Export for subsequent steps
-          echo "ANDROID_KEYSTORE_BASE64=$ANDROID_KEYSTORE_BASE64" >> $GITHUB_ENV
-          echo "ANDROID_KEYSTORE_PASSWORD=$ANDROID_KEYSTORE_PASSWORD" >> $GITHUB_ENV
-          echo "ANDROID_KEY_PASSWORD=$ANDROID_KEY_PASSWORD" >> $GITHUB_ENV
-          echo "ANDROID_KEY_ALIAS=$ANDROID_KEY_ALIAS" >> $GITHUB_ENV
-
-          echo "Secrets fetched successfully."
-
-      # 9. Decode keystore and prepare JKS
-      - name: Decode and prepare keystore
+      # 8. Export secrets from Infisical
+      - name: Export secrets from Infisical
+        run: |
+          infisical export --token $INFISICAL_TOKEN --format=dotenv --output-file=.env
         shell: bash
+
+      # 9. Load secrets into environment
+      - name: Load secrets
+        run: |
+          set -o allexport
+          source .env
+          set +o allexport
+
+      # 10. Decode keystore and convert if PKCS12
+      - name: Prepare Android Keystore
         run: |
           set -e
           mkdir -p android
@@ -100,12 +93,10 @@ jobs:
           fi
 
           ls -l android/
-          echo "Keystore alias/entries:"
           keytool -list -v -keystore android/my-release-key.jks -storepass "$ANDROID_KEYSTORE_PASSWORD" || true
 
-      # 10. Build AAB
-      - name: Build AAB
-        shell: bash
+      # 11. Build AAB
+      - name: Build Android AAB
         run: |
           cd android
           chmod +x gradlew
@@ -116,7 +107,7 @@ jobs:
             -Pandroid.injected.signing.key.password="$ANDROID_KEY_PASSWORD" \
             --stacktrace --info
 
-      # 11. Upload artifact
+      # 12. Upload the AAB artifact
       - name: Upload AAB Artifact
         uses: actions/upload-artifact@v4
         with:
