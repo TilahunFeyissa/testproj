@@ -60,11 +60,7 @@ jobs:
       # 7. Install Infisical CLI
       - name: Install Infisical CLI
         run: |
-          curl -sSL https://github.com/Infisical/infisical/releases/latest/download/infisical-linux-x64.tar.gz -o infisical.tar.gz
-          mkdir -p ~/.infisical/bin
-          tar -xzf infisical.tar.gz -C ~/.infisical/bin
-          export PATH="$HOME/.infisical/bin:$PATH"
-          infisical --version
+          curl -1sLf 'https://artifacts-cli.infisical.com/setup.deb.sh' | sudo -E bash  sudo apt-get update && sudo apt-get install -y infisical infisical --version
 
       # 8. Fetch secrets from Infisical
       - name: Fetch secrets from Infisical
