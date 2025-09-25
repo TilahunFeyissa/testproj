@@ -69,13 +69,13 @@ jobs:
       - name: Fetch secrets from Infisical
         run: |
           infisical export \
-            --token $INFISICAL_TOKEN \
-            --projectId $INFISICAL_PROJECT_ID \
-            --env $INFISICAL_ENVIRONMENT \
-            --format dotenv \
-            --output-file .env
+             -t "$INFISICAL_TOKEN" \
+             --projectId "$INFISICAL_PROJECT_ID" \
+             --env "$INFISICAL_ENVIRONMENT" \
+             --format dotenv \
+             --output-file .env
 
-          cat .env
+           cat .env
 
       # 9. Decode keystore from Infisical secret
       - name: Decode and prepare keystore (detect PKCS12 → JKS)
