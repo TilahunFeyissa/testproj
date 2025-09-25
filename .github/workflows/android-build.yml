@@ -10,14 +10,19 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+      # Infisical service token and project ID
       INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN }}
+      INFISICAL_PROJECT_ID: ${{ secrets.INFISICAL_PROJECT_ID }}
+
+      # Environment to fetch (production, staging, development)
+      INFISICAL_ENVIRONMENT: production
 
     steps:
-      # 1. Checkout
+      # 1. Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Node.js
+      # 2. Install Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -36,7 +41,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # 5. Java
+      # 5. Set up JDK 17
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -56,35 +61,44 @@ jobs:
 
       # 7. Install Infisical CLI
       - name: Install Infisical CLI
-        run: npm install -g @infisical/cli
+        run: |
+          curl -sSL https://github.com/Infisical/infisical/releases/latest/download/install.sh | bash
+          export PATH="$HOME/.infisical/bin:$PATH"
 
       # 8. Pull secrets from Infisical
       - name: Pull secrets
         run: |
-          infisical export --token $INFISICAL_TOKEN --format=dotenv --output-file=.env
+          infisical export \
+            --token $INFISICAL_TOKEN \
+            --project-id $INFISICAL_PROJECT_ID \
+            --environment $INFISICAL_ENVIRONMENT \
+            --format dotenv \
+            --output-file .env
 
       # 9. Load secrets into environment
       - name: Load secrets
         run: |
-          export $(grep -v '^#' .env | xargs)
-        shell: bash
+          set -a
+          source .env
+          set +a
 
-      # 10. Decode keystore and convert PKCS12 → JKS if needed
-      - name: Decode and prepare keystore
+      # 10. Decode keystore and prepare JKS
+      - name: Decode and prepare keystore (PKCS12 → JKS)
         run: |
           set -e
           mkdir -p android
           echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/key.bin
 
+          # Detect PKCS12 and convert
           if keytool -list -keystore android/key.bin -storetype PKCS12 -storepass "$ANDROID_KEYSTORE_PASSWORD" >/dev/null 2>&1; then
-            echo "Detected PKCS12 keystore — converting to JKS..."
+            echo "Detected PKCS12 — converting to JKS..."
             keytool -importkeystore \
               -srckeystore android/key.bin -srcstoretype PKCS12 -srcstorepass "$ANDROID_KEYSTORE_PASSWORD" \
               -destkeystore android/my-release-key.jks -deststoretype JKS \
               -deststorepass "$ANDROID_KEYSTORE_PASSWORD" -destkeypass "$ANDROID_KEY_PASSWORD" \
               -srcalias "$ANDROID_KEY_ALIAS" -destalias "$ANDROID_KEY_ALIAS" -noprompt
           else
-            echo "Not PKCS12 (or PKCS12 listing failed) — assuming input is JKS bytes. Writing as JKS."
+            echo "Not PKCS12 — assuming JKS bytes."
             mv android/key.bin android/my-release-key.jks
           fi
 
@@ -92,7 +106,7 @@ jobs:
           echo "Keystore alias/entries:"
           keytool -list -v -keystore android/my-release-key.jks -storepass "$ANDROID_KEYSTORE_PASSWORD" || true
 
-      # 11. Build AAB
+      # 11. Build the AAB
       - name: Build AAB
         run: |
           cd android
@@ -104,7 +118,7 @@ jobs:
             -Pandroid.injected.signing.key.password="$ANDROID_KEY_PASSWORD" \
             --stacktrace --info
 
-      # 12. Upload artifact
+      # 12. Upload the AAB artifact
       - name: Upload AAB Artifact
         uses: actions/upload-artifact@v4
         with:
