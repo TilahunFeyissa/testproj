@@ -70,10 +70,11 @@ jobs:
         run: |
           infisical export \
             --token $INFISICAL_TOKEN \
-            --project $INFISICAL_PROJECT_ID \
-            --environment $INFISICAL_ENVIRONMENT \
+            --projectId $INFISICAL_PROJECT_ID \
+            --env $INFISICAL_ENVIRONMENT \
             --format dotenv \
             --output-file .env
+
           cat .env
 
       # 9. Decode keystore from Infisical secret
