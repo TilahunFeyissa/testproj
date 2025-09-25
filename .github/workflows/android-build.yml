@@ -57,9 +57,9 @@ jobs:
           domain: 'https://app.infisical.com' # use https://eu.infisical.com if EU region
           env-slug: dev
           project-slug: 'test-project-fzug'
-          export-type: 'file'
-          # file-output-path: '.env'
-          file-output-path: '${{ github.workspace }}/.env'
+          export-type: file
+          file-output-path: .env
+          include-imports: true
 
       # 7. Load env vars from .env
       - name: Load .env
