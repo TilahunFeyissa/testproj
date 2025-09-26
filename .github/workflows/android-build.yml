@@ -58,7 +58,7 @@ jobs:
           env-slug: dev
           project-slug: 'test-project-fzug'
           export-type: file
-          file-output-path: /.env
+          file-output-path: .env
           recursive: true
           include-imports: true
           secret-path: /
@@ -80,7 +80,7 @@ jobs:
       - name: Print .env content (sanitized)
         run: |
           head -n 20 .env
-          grep ANDROID_KEYSTORE_BASE64 .env || echo "No keystore var found"
+          grep .env || echo "No keystore var found"
 
       # # 8. Decode and prepare keystore
       # - name: Decode and prepare keystore
