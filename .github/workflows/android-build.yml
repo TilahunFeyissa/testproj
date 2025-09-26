@@ -122,6 +122,15 @@ jobs:
 
           KEYSTORE_BASE64=$(grep '^ANDROID_KEYSTORE_BASE64=' .env | cut -d '=' -f2- | tr -d "'\"")
           echo "Keystore base64 length: ${#KEYSTORE_BASE64}"
+          # Remove any hidden characters
+          PASSWORD_CLEAN=$(echo -n "$ANDROID_KEYSTORE_PASSWORD" | tr -d '\r\n')
+
+          # Show length
+          echo "Password length: ${#PASSWORD_CLEAN}"
+
+          # Show hex values for each character (safe for debugging)
+          echo -n "$PASSWORD_CLEAN" | xxd
+
           printf "%s" "$KEYSTORE_BASE64" | base64 --decode > android/app/my-release-key.jks
           ls -lh android/app/my-release-key.jks
 
