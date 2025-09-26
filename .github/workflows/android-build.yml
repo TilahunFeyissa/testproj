@@ -116,7 +116,7 @@ jobs:
         run: |
           mkdir -p android
           printf "%s" "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/my-release-key.jks
-          ls -lh android/my-release-key.jks
+          ls -lh android/app/my-release-key.jks
           echo "✅ Keystore decoded"
 
 
@@ -124,7 +124,7 @@ jobs:
 
           # Debug keystore (optional, remove later)
           keytool -list -v \
-            -keystore android/my-release-key.jks \
+            -keystore android/app/my-release-key.jks \
             -storepass "$ANDROID_KEYSTORE_PASSWORD" \
             -storetype PKCS12 | head -n 20
           echo "Keystore base64 length: ${#ANDROID_KEYSTORE_BASE64}"
