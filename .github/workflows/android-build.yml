@@ -80,23 +80,19 @@ jobs:
       - name: Print .env content (sanitized)
         run: |
           head -n 20 .env
-          # grep .env || echo "No keystore var found"
 
       - name: Decode keystore
         run: |
           mkdir -p android/app
 
-          # Clean passwords and keystore base64
-          ANDROID_KEYSTORE_PASSWORD=$(echo -n "$ANDROID_KEYSTORE_PASSWORD" | tr -d '\r\n')
-          ANDROID_KEY_PASSWORD=$(echo -n "$ANDROID_KEY_PASSWORD" | tr -d '\r\n')
-          ANDROID_KEYSTORE_BASE64=$(echo -n "$ANDROID_KEYSTORE_BASE64" | tr -d '\r\n')
+          # # Clean passwords and keystore base64
+          # ANDROID_KEYSTORE_PASSWORD=$(echo -n "$ANDROID_KEYSTORE_PASSWORD" | tr -d '\r\n')
+          # ANDROID_KEY_PASSWORD=$(echo -n "$ANDROID_KEY_PASSWORD" | tr -d '\r\n')
+          # ANDROID_KEYSTORE_BASE64=$(echo -n "$ANDROID_KEYSTORE_BASE64" | tr -d '\r\n')
 
-          # Debug: show password safely
-          echo "Keystore password length: ${#ANDROID_KEYSTORE_PASSWORD}"
-          echo -n "$ANDROID_KEYSTORE_PASSWORD" | xxd
 
           # Decode keystore
-          printf "%s" "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/my-release-key.jks
+          printf "%s" "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/my-release-key.jks
           ls -lh android/app/my-release-key.jks
 
       # 9. Build AAB
