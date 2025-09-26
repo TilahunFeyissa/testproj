@@ -61,17 +61,20 @@ jobs:
           file-output-path: .env
           recursive: true
           include-imports: true
+          secret-path: /
 
       # 7. Load env vars from .env
-      - name: Load .env
+      - name: Load env from Infisical
         run: |
-          if [ -f "testproj.env" ]; then
-            echo "Loading testproj.env"
+          FILE_PATH="$(pwd)/testproj.env"
+          if [ -f "$FILE_PATH" ]; then
+            echo "Loading $FILE_PATH"
             set -a
-            source testproj.env
+            source "$FILE_PATH"
             set +a
           else
-            echo "Env file not found. Check Infisical step."
+            echo "Env file not found at $FILE_PATH"
+            ls -lah
             exit 1
           fi
 
