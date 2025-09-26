@@ -116,6 +116,10 @@ jobs:
         run: |
           mkdir -p android/app
           # Extract base64 value directly from .env, remove quotes
+          ANDROID_KEYSTORE_PASSWORD=$(echo -n "$ANDROID_KEYSTORE_PASSWORD" | tr -d '\r\n')
+          ANDROID_KEY_PASSWORD=$(echo -n "$ANDROID_KEY_PASSWORD" | tr -d '\r\n')
+          ANDROID_KEYSTORE_BASE64=$(echo -n "$ANDROID_KEYSTORE_BASE64" | tr -d '\r\n')
+
           KEYSTORE_BASE64=$(grep '^ANDROID_KEYSTORE_BASE64=' .env | cut -d '=' -f2- | tr -d "'\"")
           echo "Keystore base64 length: ${#KEYSTORE_BASE64}"
           printf "%s" "$KEYSTORE_BASE64" | base64 --decode > android/app/my-release-key.jks
