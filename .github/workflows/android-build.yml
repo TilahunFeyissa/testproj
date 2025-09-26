@@ -114,8 +114,10 @@ jobs:
       # 8. Decode PKCS12 keystore (NO conversion)
       - name: Decode keystore
         run: |
-          mkdir -p android
-          printf "%s" "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/my-release-key.jks
+          mkdir -p android/app
+          # Remove surrounding quotes
+          KEYSTORE_BASE64=$(echo "$ANDROID_KEYSTORE_BASE64" | sed -e "s/^'//" -e "s/'$//")
+          printf "%s" "$KEYSTORE_BASE64" | base64 --decode > android/app/my-release-key.jks
           ls -lh android/app/my-release-key.jks
           echo "✅ Keystore decoded"
 
