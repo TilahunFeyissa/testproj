@@ -75,36 +75,47 @@ jobs:
             exit 1
           fi
 
-      # 8. Decode and prepare keystore
-      - name: Decode and prepare keystore
+      # # 8. Decode and prepare keystore
+      # - name: Decode and prepare keystore
+      #   run: |
+      #     mkdir -p android
+      #     echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/key.bin
+
+      #     if keytool -list -keystore android/key.bin -storetype PKCS12 -storepass "$ANDROID_KEYSTORE_PASSWORD" >/dev/null 2>&1; then
+      #       echo "Detected PKCS12 keystore — converting to JKS..."
+      #       keytool -importkeystore \
+      #         -srckeystore android/key.bin -srcstoretype PKCS12 -srcstorepass "$ANDROID_KEYSTORE_PASSWORD" \
+      #         -destkeystore android/my-release-key.jks -deststoretype JKS \
+      #         -deststorepass "$ANDROID_KEYSTORE_PASSWORD" -destkeypass "$ANDROID_KEY_PASSWORD" \
+      #         -srcalias "$ANDROID_KEY_ALIAS" -destalias "$ANDROID_KEY_ALIAS" -noprompt
+      #     else
+      #       echo "Not PKCS12 — assuming JKS."
+      #       mv android/key.bin android/my-release-key.jks
+      #     fi
+
+      # # 9. Build AAB
+      # - name: Build AAB
+      #   run: |
+      #     cd android
+      #     chmod +x gradlew
+      #     ./gradlew clean bundleRelease \
+      #       -Pandroid.injected.signing.store.file=my-release-key.jks \
+      #       -Pandroid.injected.signing.store.password="$ANDROID_KEYSTORE_PASSWORD" \
+      #       -Pandroid.injected.signing.key.alias="$ANDROID_KEY_ALIAS" \
+      #       -Pandroid.injected.signing.key.password="$ANDROID_KEY_PASSWORD" \
+      #       --stacktrace --info
+      # 8. Decode keystore (no conversion, PKCS12 only)
+      - name: Decode keystore
         run: |
           mkdir -p android
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/key.bin
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/my-release-key.jks
 
-          if keytool -list -keystore android/key.bin -storetype PKCS12 -storepass "$ANDROID_KEYSTORE_PASSWORD" >/dev/null 2>&1; then
-            echo "Detected PKCS12 keystore — converting to JKS..."
-            keytool -importkeystore \
-              -srckeystore android/key.bin -srcstoretype PKCS12 -srcstorepass "$ANDROID_KEYSTORE_PASSWORD" \
-              -destkeystore android/my-release-key.jks -deststoretype JKS \
-              -deststorepass "$ANDROID_KEYSTORE_PASSWORD" -destkeypass "$ANDROID_KEY_PASSWORD" \
-              -srcalias "$ANDROID_KEY_ALIAS" -destalias "$ANDROID_KEY_ALIAS" -noprompt
-          else
-            echo "Not PKCS12 — assuming JKS."
-            mv android/key.bin android/my-release-key.jks
-          fi
-
-      # 9. Build AAB
+      # 9. Build Release AAB (let Gradle use signingConfigs)
       - name: Build AAB
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew clean bundleRelease \
-            -Pandroid.injected.signing.store.file=my-release-key.jks \
-            -Pandroid.injected.signing.store.password="$ANDROID_KEYSTORE_PASSWORD" \
-            -Pandroid.injected.signing.key.alias="$ANDROID_KEY_ALIAS" \
-            -Pandroid.injected.signing.key.password="$ANDROID_KEY_PASSWORD" \
-            --stacktrace --info
-
+          ./gradlew clean bundleRelease --stacktrace --info
       # 10. Upload AAB artifact
       - name: Upload AAB Artifact
         uses: actions/upload-artifact@v4
