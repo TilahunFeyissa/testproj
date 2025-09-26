@@ -108,14 +108,20 @@ jobs:
       - name: Decode keystore
         run: |
           mkdir -p android
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/my-release-key.jks
+          printf "%s" "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/my-release-key.jks
+          ls -lh android/my-release-key.jks
           echo "✅ Keystore decoded"
+
+
+
 
           # Debug keystore (optional, remove later)
           keytool -list -v \
             -keystore android/my-release-key.jks \
             -storepass "$ANDROID_KEYSTORE_PASSWORD" \
             -storetype PKCS12 | head -n 20
+          echo "Keystore base64 length: ${#ANDROID_KEYSTORE_BASE64}"
+          echo "$ANDROID_KEYSTORE_BASE64" | head -c 100
 
       # 9. Build AAB
       - name: Build AAB
