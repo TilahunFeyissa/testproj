@@ -66,7 +66,7 @@ jobs:
       # 7. Load env vars from .env
       - name: Load env from Infisical
         run: |
-          FILE_PATH="$(pwd)/testproj.env"
+          FILE_PATH="$(pwd)/.env"
           if [ -f "$FILE_PATH" ]; then
             echo "Loading $FILE_PATH"
             set -a
