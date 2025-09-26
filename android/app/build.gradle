@@ -92,14 +92,14 @@ android {
         // keyAlias MYAPP_UPLOAD_KEY_ALIAS
         // keyPassword MYAPP_UPLOAD_KEY_PASSWORD
       
-        if (System.getenv("MYAPP_UPLOAD_STORE_FILE")) {
-            storeFile file(System.getenv("MYAPP_UPLOAD_STORE_FILE"))
-            storePassword System.getenv("MYAPP_UPLOAD_STORE_PASSWORD")
-            keyAlias System.getenv("MYAPP_UPLOAD_KEY_ALIAS")
-            keyPassword System.getenv("MYAPP_UPLOAD_KEY_PASSWORD")
+         if (System.getenv("ANDROID_KEYSTORE_PASSWORD")) {
+            storeFile file("$rootDir/android/my-release-key.jks")
+            storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+            keyAlias System.getenv("ANDROID_KEY_ALIAS")
+            keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+            storeType "JKS" // or PKCS12 depending on file type
         }
     
-        storeType "PKCS12"
     }
         debug {
             storeFile file('debug.keystore')

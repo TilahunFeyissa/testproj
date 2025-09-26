@@ -104,18 +104,30 @@ jobs:
       #       -Pandroid.injected.signing.key.alias="$ANDROID_KEY_ALIAS" \
       #       -Pandroid.injected.signing.key.password="$ANDROID_KEY_PASSWORD" \
       #       --stacktrace --info
-      # 8. Decode keystore (no conversion, PKCS12 only)
+      # 8. Decode PKCS12 keystore (NO conversion)
       - name: Decode keystore
         run: |
           mkdir -p android
           echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/my-release-key.jks
+          echo "✅ Keystore decoded"
 
-      # 9. Build Release AAB (let Gradle use signingConfigs)
+          # Debug keystore (optional, remove later)
+          keytool -list -v \
+            -keystore android/my-release-key.jks \
+            -storepass "$ANDROID_KEYSTORE_PASSWORD" \
+            -storetype PKCS12 | head -n 20
+
+      # 9. Build AAB
       - name: Build AAB
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew clean bundleRelease --stacktrace --info
+          ./gradlew clean bundleRelease \
+            -Pandroid.injected.signing.store.file=my-release-key.jks \
+            -Pandroid.injected.signing.store.password="$ANDROID_KEYSTORE_PASSWORD" \
+            -Pandroid.injected.signing.key.alias="$ANDROID_KEY_ALIAS" \
+            -Pandroid.injected.signing.key.password="$ANDROID_KEY_PASSWORD" \
+            --stacktrace --info
       # 10. Upload AAB artifact
       - name: Upload AAB Artifact
         uses: actions/upload-artifact@v4
