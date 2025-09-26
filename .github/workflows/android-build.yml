@@ -115,7 +115,7 @@ jobs:
       - name: Decode keystore
         run: |
           mkdir -p android
-          printf "%s" "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/my-release-key.jks
+          printf "%s" "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/my-release-key.jks
           ls -lh android/my-release-key.jks
           echo "✅ Keystore decoded"
 
