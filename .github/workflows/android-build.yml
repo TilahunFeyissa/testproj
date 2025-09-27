@@ -62,6 +62,11 @@ jobs:
           recursive: true
           include-imports: true
           secret-path: /
+          
+      - name: List all Infisical secrets
+        run: |
+          echo "Dumping all secrets from .env"
+          cat .env
 
       # 7. Load env vars from .env
       - name: Load env from Infisical
