@@ -123,7 +123,7 @@ jobs:
           cd android
           chmod +x gradlew
           ./gradlew clean bundleRelease \
-            -Pandroid.injected.signing.store.file=app/my-release-key.jks \ 
+            -Pandroid.injected.signing.store.file=my-release-key.jks \ 
             -Pandroid.injected.signing.store.password="$ANDROID_KEYSTORE_PASSWORD" \
             -Pandroid.injected.signing.key.alias="$ANDROID_KEY_ALIAS" \
             -Pandroid.injected.signing.key.password="$ANDROID_KEY_PASSWORD" \
