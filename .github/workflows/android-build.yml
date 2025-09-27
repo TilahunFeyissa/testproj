@@ -101,23 +101,22 @@ jobs:
       - name: Decode keystore
         run: |
           mkdir -p android/app
-
-          # Clean secrets: strip quotes, spaces, CRLF
-          ANDROID_KEYSTORE_BASE64=$(echo "$ANDROID_KEYSTORE_BASE64" | tr -d '\r\n' | tr -d '"')
-          ANDROID_KEYSTORE_PASSWORD=$(echo "$ANDROID_KEYSTORE_PASSWORD" | tr -d '\r\n' | tr -d '"')
-          ANDROID_KEY_PASSWORD=$(echo "$ANDROID_KEY_PASSWORD" | tr -d '\r\n' | tr -d '"')
-
+      
+          ANDROID_KEYSTORE_BASE64=$(echo "$ANDROID_KEYSTORE_BASE64" | tr -d '\r\n' | sed "s/^'//;s/'$//")
+          ANDROID_KEYSTORE_PASSWORD=$(echo "$ANDROID_KEYSTORE_PASSWORD" | tr -d '\r\n' | sed "s/^'//;s/'$//")
+          ANDROID_KEY_PASSWORD=$(echo "$ANDROID_KEY_PASSWORD" | tr -d '\r\n' | sed "s/^'//;s/'$//")
+          ANDROID_KEY_ALIAS=$(echo "$ANDROID_KEY_ALIAS" | tr -d '\r\n' | sed "s/^'//;s/'$//")
+      
           echo "Keystore base64 length: ${#ANDROID_KEYSTORE_BASE64}"
           echo "Password length: ${#ANDROID_KEYSTORE_PASSWORD}"
-
-          # Decode into keystore file
-          printf "%s" "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/my-release-key.jks
+          
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/my-release-key.jks
           ls -lh android/app/my-release-key.jks
-
-          # Validate file
+      
           keytool -list -v \
             -keystore android/app/my-release-key.jks \
             -storepass "$ANDROID_KEYSTORE_PASSWORD" || exit 1
+
 
       # 9. Build AAB
       - name: Build AAB
