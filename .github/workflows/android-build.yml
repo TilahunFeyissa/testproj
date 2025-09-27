@@ -100,8 +100,7 @@ jobs:
           # Validate file
           keytool -list -v \
             -keystore android/app/my-release-key.jks \
-            -storepass "$ANDROID_KEYSTORE_PASSWORD" \
-            -storetype PKCS12 | head -n 20
+            -storepass "$ANDROID_KEYSTORE_PASSWORD" || exit 1
 
       # 9. Build AAB
       - name: Build AAB
