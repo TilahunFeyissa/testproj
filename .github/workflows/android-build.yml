@@ -62,7 +62,7 @@ jobs:
           recursive: true
           include-imports: true
           secret-path: /
-          
+
       - name: List all Infisical secrets
         run: |
           echo "Dumping all secrets from .env"
@@ -74,11 +74,11 @@ jobs:
           FILE_PATH="$(pwd)/.env"
           if [ -f "$FILE_PATH" ]; then
             echo "Loading $FILE_PATH"
-            # Write each line to GitHub Actions environment
             while IFS= read -r line || [ -n "$line" ]; do
-              # skip comments and empty lines
               if [[ ! "$line" =~ ^# ]] && [[ -n "$line" ]]; then
-                echo "$line" >> $GITHUB_ENV
+                # remove surrounding single quotes if present
+                clean_line=$(echo "$line" | sed "s/='\(.*\)'$/=\1/")
+                echo "$clean_line" >> $GITHUB_ENV
               fi
             done < "$FILE_PATH"
           else
@@ -90,33 +90,32 @@ jobs:
       - name: Print .env content (sanitized)
         run: |
           head -n 20 .env
-  
+
       - name: Debug env vars
         run: |
-           echo "ANDROID_KEYSTORE_BASE64 length: ${#ANDROID_KEYSTORE_BASE64}"
-           echo "ANDROID_KEYSTORE_PASSWORD length: ${#ANDROID_KEYSTORE_PASSWORD}"
-           echo "ANDROID_KEY_ALIAS: $ANDROID_KEY_ALIAS"
-           echo "ANDROID_KEY_PASSWORD length: ${#ANDROID_KEY_PASSWORD}"
+          echo "ANDROID_KEYSTORE_BASE64 length: ${#ANDROID_KEYSTORE_BASE64}"
+          echo "ANDROID_KEYSTORE_PASSWORD length: ${#ANDROID_KEYSTORE_PASSWORD}"
+          echo "ANDROID_KEY_ALIAS: $ANDROID_KEY_ALIAS"
+          echo "ANDROID_KEY_PASSWORD length: ${#ANDROID_KEY_PASSWORD}"
 
       - name: Decode keystore
         run: |
           mkdir -p android/app
-      
+
           ANDROID_KEYSTORE_BASE64=$(echo "$ANDROID_KEYSTORE_BASE64" | tr -d '\r\n' | sed "s/^'//;s/'$//")
           ANDROID_KEYSTORE_PASSWORD=$(echo "$ANDROID_KEYSTORE_PASSWORD" | tr -d '\r\n' | sed "s/^'//;s/'$//")
           ANDROID_KEY_PASSWORD=$(echo "$ANDROID_KEY_PASSWORD" | tr -d '\r\n' | sed "s/^'//;s/'$//")
           ANDROID_KEY_ALIAS=$(echo "$ANDROID_KEY_ALIAS" | tr -d '\r\n' | sed "s/^'//;s/'$//")
-      
+
           echo "Keystore base64 length: ${#ANDROID_KEYSTORE_BASE64}"
           echo "Password length: ${#ANDROID_KEYSTORE_PASSWORD}"
-          
+
           echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/my-release-key.jks
           ls -lh android/app/my-release-key.jks
-      
+
           keytool -list -v \
             -keystore android/app/my-release-key.jks \
             -storepass "$ANDROID_KEYSTORE_PASSWORD" || exit 1
-
 
       # 9. Build AAB
       - name: Build AAB
@@ -124,7 +123,7 @@ jobs:
           cd android
           chmod +x gradlew
           ./gradlew clean bundleRelease \
-            -Pandroid.injected.signing.store.file=my-release-key.jks \
+            -Pandroid.injected.signing.store.file=app/my-release-key.jks \ 
             -Pandroid.injected.signing.store.password="$ANDROID_KEYSTORE_PASSWORD" \
             -Pandroid.injected.signing.key.alias="$ANDROID_KEY_ALIAS" \
             -Pandroid.injected.signing.key.password="$ANDROID_KEY_PASSWORD" \
